@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674177119496",
+    "project_id": "mrrooots-chatter",
+    "storage_bucket": "mrrooots-chatter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674177119496:android:cc892b61650eec2a39e8bd",
+        "android_client_info": {
+          "package_name": "ru.mrrooots.chatter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFTuc664KaQOqWOpKwyX8_CfuEbUvSNA4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
