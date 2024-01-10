@@ -1,16 +1,18 @@
-# chatter
+# Chatter
 
-Simple chat application made with flutter using firebase
+Complex chat application made with flutter using firebase services.
 
-## Getting Started
+#### Main dependencies:
 
-This project is a starting point for a Flutter application.
+- FirebaseAuth,
+- Firebase Firestore.
 
-A few resources to get you started if this is your first Flutter project:
+#### State management:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- BLoC
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Road map
+
+- Real-time profile updates
+- Profile settings sync across devices
+- Dialogs
