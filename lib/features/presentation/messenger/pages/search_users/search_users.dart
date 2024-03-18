@@ -1,4 +1,5 @@
 import 'package:chatter/features/presentation/common/bloc/authentication/authentication_bloc.dart';
+import 'package:chatter/features/presentation/messenger/bloc/dialogs_list_bloc/dialogs_list_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,12 +26,17 @@ class SearchUsersPageBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = BlocProvider.of<AuthenticationBloc>(context).currentUser;
+    final List<String> excludedIds = BlocProvider.of<DialogsListBloc>(context)
+        .dialogs
+        .map((e) => e.id)
+        .toList()
+      ..add(user.id);
+
     return StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection('/users')
-          .where('id',
-              isNotEqualTo:
-                  BlocProvider.of<AuthenticationBloc>(context).currentUser.id)
+          .where('id', whereNotIn: excludedIds)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -39,9 +45,14 @@ class SearchUsersPageBody extends StatelessWidget {
             itemBuilder: (context, index) {
               final data = snapshot.data!.docs[index].data();
               return ListTile(
-                onTap: () {},
+                onTap: () {
+                  BlocProvider.of<DialogsListBloc>(context).add(
+                    DialogsListAdd(user: user, dialogWith: data['id']),
+                  );
+                  Navigator.of(context).pop();
+                },
                 title: Text(data['firstname'] + ' ' + data['lastname']),
-                subtitle: Text(data['id']),
+                subtitle: Text('@${data['username']}'),
               );
             },
           );

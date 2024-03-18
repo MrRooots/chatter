@@ -28,7 +28,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
     }
 
     emit(state.copyWith(message: '', status: SignUpStatus.loading));
-
+    print(event);
     final failureOrUser = await signUp(SignUpUserParams(
       username: event.username,
       password: event.password,

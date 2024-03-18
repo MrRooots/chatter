@@ -12,7 +12,7 @@ final class ServerException extends BaseException {
 
 /// Connection exceptions
 final class ConnectionException extends BaseException {
-  const ConnectionException({required super.message});
+  const ConnectionException({super.message = 'No internet connection!'});
 }
 
 /// Authorization exceptions

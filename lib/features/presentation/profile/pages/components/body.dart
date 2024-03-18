@@ -54,8 +54,8 @@ class ProfilePageBody extends StatelessWidget {
               ),
               BlocListener<EditSettingsBloc, EditSettingsState>(
                 listenWhen: (previous, current) => current.isSuccess,
-                listener: (context, state) {
-                  print('Updated settings');
+                listener: (context, state) async {
+                  print('Settings updated with state $state');
                 },
               ),
             ],
@@ -100,8 +100,10 @@ class ProfileManagement extends StatelessWidget {
           onPressed: () {
             BlocProvider.of<AuthenticationBloc>(context)
                 .add(const AuthenticationUnauth());
+
             Navigator.of(context).pushNamedAndRemoveUntil(
-                SplashPage.routeName, (route) => false);
+                SplashPage.routeName, (route) => false,
+                arguments: {'unauth': true});
           },
           title: 'Log out',
         ),

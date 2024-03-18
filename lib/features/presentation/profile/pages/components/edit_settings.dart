@@ -25,6 +25,7 @@ class _EditSettingsPageState extends State<EditSettingsPage> {
     super.initState();
 
     user = BlocProvider.of<AuthenticationBloc>(context).currentUser;
+    print(user.settings);
     darkTheme = user.settings.darkTheme;
     showOnboarding = user.settings.showOnboarding;
     receiveNotifications = user.settings.receiveNotifications;
@@ -57,7 +58,13 @@ class _EditSettingsPageState extends State<EditSettingsPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Allow notifications'),
-                BlocBuilder<EditSettingsBloc, EditSettingsState>(
+                BlocConsumer<EditSettingsBloc, EditSettingsState>(
+                  listener: (context, state) {
+                    if (state.isSuccess) {
+                      BlocProvider.of<AuthenticationBloc>(context)
+                          .add(AuthenticationUpdated(newUser: state.user!));
+                    }
+                  },
                   builder: (context, state) {
                     return Switch(
                       value: receiveNotifications,

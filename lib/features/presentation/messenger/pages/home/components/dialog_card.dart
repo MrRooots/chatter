@@ -20,12 +20,12 @@ class DialogCard extends StatelessWidget {
         shape: const RoundedRectangleBorder(),
         onTap: () => Navigator.of(context)
             .pushNamed(DialogPage.routeName, arguments: dialog),
-        title: const Text(
-          'Sender name',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+        title: Text(
+          '@${dialog.sender.username}',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
         ),
         subtitle: Text(
-          dialog.messages.last.body,
+          dialog.messages.isNotEmpty ? dialog.messages.last.body : '',
           maxLines: 2,
           style: const TextStyle(fontSize: 14.0),
         ),

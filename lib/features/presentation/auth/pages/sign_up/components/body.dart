@@ -31,9 +31,9 @@ class _SignUpPageBodyState extends State<SignUpPageBody> {
 
   String get password => _passwordController.text.trim();
 
-  String get firstname => _usernameController.text.trim();
+  String get firstname => _firstnameController.text.trim();
 
-  String get lastname => _usernameController.text.trim();
+  String get lastname => _lastnameController.text.trim();
 
   String get email => _emailController.text.trim();
 
@@ -120,8 +120,21 @@ class _SignUpPageBodyState extends State<SignUpPageBody> {
           ),
         ),
         BlocConsumer<SignUpBloc, SignUpState>(
-          listener: (context, state) {
-            // TODO: implement listener
+          listener: (context, state) async {
+            if (state.isSuccess) {
+              await Future.delayed(const Duration(milliseconds: 750));
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                duration: Duration(seconds: 1),
+                backgroundColor: Palette.lightGreenSalad,
+                behavior: SnackBarBehavior.floating,
+                content: Text('Sign In with your credentials!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Palette.white)),
+              ));
+              Navigator.of(context).pop();
+            }
           },
           builder: (context, state) {
             return Expanded(

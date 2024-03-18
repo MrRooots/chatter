@@ -10,6 +10,7 @@ final class AuthenticateUserUsecase implements UseCaseWithoutParams {
   const AuthenticateUserUsecase({required this.repository});
 
   @override
-  Future<Either<UserEntity, Failure>> call() async =>
-      await repository.authenticate();
+  Future<Either<UserEntity, Failure>> call() async {
+    return await repository.authenticate();
+  }
 }

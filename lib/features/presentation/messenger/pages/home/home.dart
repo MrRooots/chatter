@@ -1,10 +1,11 @@
 import 'package:chatter/core/themes/palette.dart';
-import 'package:chatter/features/domain/messenger/entities/dialog_entity.dart';
-import 'package:chatter/features/domain/messenger/entities/message_entity.dart';
+import 'package:chatter/features/presentation/common/bloc/authentication/authentication_bloc.dart';
+import 'package:chatter/features/presentation/messenger/bloc/dialogs_list_bloc/dialogs_list_bloc.dart';
 import 'package:chatter/features/presentation/messenger/pages/home/components/dialog_card.dart';
 import 'package:chatter/features/presentation/messenger/pages/search_users/search_users.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomePage extends StatefulWidget {
   static const String routeName = '/home';
@@ -28,31 +29,18 @@ class _HomePageState extends State<HomePage> {
 
       if (d == ScrollDirection.reverse && _isVisible) {
         setState(() => _isVisible = false);
-      } else {
-        if (d == ScrollDirection.forward && !_isVisible) {
-          setState(() => _isVisible = true);
-        }
+      } else if (d == ScrollDirection.forward && !_isVisible) {
+        setState(() => _isVisible = true);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<DialogEntity> dialogs = [
-      DialogEntity(id: '1', messages: [
-        MessageEntity(
-          to: 'to',
-          senderId: 'senderId',
-          senderInitials: 'senderInitials',
-          body: 'body',
-          createdTimestamp: DateTime.now().millisecondsSinceEpoch,
-          isViewed: false,
-        )
-      ])
-    ];
     return Scaffold(
       appBar: AppBar(
         title: const Text('All chats'),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             highlightColor: Colors.transparent,
@@ -68,19 +56,76 @@ class _HomePageState extends State<HomePage> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: RefreshIndicator(
-          color: Palette.lightGreenSalad,
-          onRefresh: () async {
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
-          child: ListView.builder(
-            controller: _listController,
-            physics: const BouncingScrollPhysics(),
-            itemCount: dialogs.length * 24,
-            itemBuilder: (context, index) {
-              return DialogCard(dialog: dialogs[index % dialogs.length]);
+            color: Palette.lightGreenSalad,
+            onRefresh: () async {
+              BlocProvider.of<DialogsListBloc>(context).add(DialogsListFetch(
+                  user: BlocProvider.of<AuthenticationBloc>(context)
+                      .currentUser));
             },
-          ),
-        ),
+            child: BlocBuilder<DialogsListBloc, DialogsListState>(
+              builder: (context, state) {
+                if (state.isSuccess) {
+                  if (state.dialogs!.isEmpty) {
+                    return Stack(
+                      children: [
+                        ListView(),
+                        const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image(
+                              image: AssetImage('assets/images/error.png'),
+                              height: 128,
+                            ),
+                            Text(
+                              textAlign: TextAlign.center,
+                              'You dont have any active dialogs right now!\nYou can start a new dialog using the button in right lower corner!',
+                              style: TextStyle(color: Palette.black),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: _listController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: state.dialogs!.length,
+                    itemBuilder: (context, index) {
+                      return DialogCard(
+                        dialog: state.dialogs![index],
+                      );
+                    },
+                  );
+                } else if (state.isFailed) {
+                  return Stack(
+                    children: [
+                      ListView(),
+                      const SizedBox(
+                        width: double.infinity,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Image(
+                              image: AssetImage('assets/images/error.png'),
+                              height: 128,
+                            ),
+                            Text(
+                              textAlign: TextAlign.center,
+                              'Failed to load dialogs!',
+                              style: TextStyle(color: Palette.black),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              },
+            )),
       ),
       floatingActionButton: AnimatedSlide(
         duration: const Duration(milliseconds: 250),

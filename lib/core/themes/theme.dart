@@ -1,7 +1,6 @@
+import 'package:chatter/core/themes/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'package:chatter/core/themes/palette.dart';
 
 /// Main application theme
 final class MyTheme {
@@ -56,5 +55,33 @@ final class MyTheme {
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: Palette.lightGreenSalad,
     ),
+  );
+
+  static final ThemeData darkTheme = baseTheme.copyWith(
+    scaffoldBackgroundColor: Colors.black,
+    brightness: Brightness.dark,
+    iconTheme: const IconThemeData(color: Palette.white, size: 16.0),
+    appBarTheme: const AppBarTheme(
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
+      scrolledUnderElevation: 0.0,
+      elevation: 0.0,
+      iconTheme: IconThemeData(color: Palette.white, size: 16.0),
+      titleTextStyle: TextStyle(
+        fontSize: 18.0,
+        color: Palette.white,
+        fontFamily: 'Nunito',
+      ),
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Palette.black,
+        statusBarBrightness: Brightness.light,
+      ),
+    ),
+  );
+
+  static final ThemeData lightTheme = baseTheme.copyWith(
+    brightness: Brightness.light,
   );
 }

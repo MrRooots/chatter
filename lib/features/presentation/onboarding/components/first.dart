@@ -23,7 +23,7 @@ class OnboardingPageItemFirst extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'CHATTER',
+                  'CHAT APP',
                   style: TextStyle(
                     color: pageColor,
                     fontSize: 56,

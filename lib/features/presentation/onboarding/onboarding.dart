@@ -1,11 +1,11 @@
 import 'package:chatter/core/themes/palette.dart';
-import 'package:chatter/features/presentation/auth/pages/onboarding/components/dots_row.dart';
-import 'package:chatter/features/presentation/auth/pages/onboarding/components/first.dart';
-import 'package:chatter/features/presentation/auth/pages/onboarding/components/second.dart';
-import 'package:chatter/features/presentation/auth/pages/onboarding/components/third.dart';
 import 'package:chatter/features/presentation/auth/pages/sign_in/sign_in.dart';
 import 'package:chatter/features/presentation/common/bloc/authentication/authentication_bloc.dart';
 import 'package:chatter/features/presentation/messenger/pages/home/home.dart';
+import 'package:chatter/features/presentation/onboarding/components/dots_row.dart';
+import 'package:chatter/features/presentation/onboarding/components/first.dart';
+import 'package:chatter/features/presentation/onboarding/components/second.dart';
+import 'package:chatter/features/presentation/onboarding/components/third.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -57,7 +57,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
             try {
               BlocProvider.of<AuthenticationBloc>(context).currentUser;
 
-              Navigator.of(context).pushNamed(HomePage.routeName);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                HomePage.routeName,
+                (route) => false,
+              );
             } catch (e) {
               Navigator.of(context).pushNamed(SignInPage.routeName);
             }

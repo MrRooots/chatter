@@ -51,7 +51,7 @@ class AuthenticationBloc
           }),
           (r) => null,
         );
-      } on Exception catch (e) {
+      } on Exception {
         return;
       }
     }
@@ -68,6 +68,7 @@ class AuthenticationBloc
     final AuthenticationStart event,
     final Emitter<AuthenticationState> emit,
   ) async {
+    print('On auth start with event: ${event}');
     final userOrFailure = await authenticateUser();
 
     userOrFailure.fold(

@@ -13,50 +13,56 @@ class MessageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final DateTime timestamp = DateTime.now();
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        if (isLeft) const SizedBox(width: 64.0),
-        Flexible(
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.circular(16.0),
-              border: Border.fromBorderSide(
-                BorderSide(
-                  color: isLeft ? Palette.lightGreenSalad : Palette.purple,
-                  width: .5,
-                ),
-              ),
-              color: (isLeft ? Palette.lightGreenSalad : Palette.purple)
-                  .withOpacity(.1),
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(message.body, style: const TextStyle(fontSize: 16.0)),
-                  Row(
-                    children: [
-                      const Expanded(child: SizedBox.shrink()),
-                      Text(
-                        DateFormat('kk:mm').format(timestamp),
-                        style: const TextStyle(
-                          fontSize: 12.0,
-                          color: Palette.grey,
-                        ),
-                      ),
-                    ],
+    return GestureDetector(
+      onLongPress: () => print('Edit message'),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (isLeft) const SizedBox(width: 64.0),
+          Flexible(
+            flex: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(16.0),
+                border: Border.fromBorderSide(
+                  BorderSide(
+                    color: isLeft ? Palette.lightGreenSalad : Palette.purple,
+                    width: .5,
                   ),
-                ],
+                ),
+                color: (isLeft ? Palette.lightGreenSalad : Palette.purple)
+                    .withOpacity(.1),
+              ),
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(message.body, style: const TextStyle(fontSize: 16.0)),
+                    Row(
+                      children: [
+                        const Expanded(child: SizedBox.shrink()),
+                        Text(
+                          DateFormat('HH:mm').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  message.createdTimestamp * 1000)),
+                          style: const TextStyle(
+                            fontSize: 12.0,
+                            color: Palette.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        if (!isLeft) const SizedBox(width: 64.0),
-      ],
+          if (!isLeft) const SizedBox(width: 64.0),
+        ],
+      ),
     );
   }
 }
