@@ -10,7 +10,7 @@ sealed class DialogEvent extends Equatable {
 final class DialogOpen extends DialogEvent {
   final String userId;
   final String dialogId;
-  final UserEntity sender;
+  final String sender;
 
   const DialogOpen({
     required this.userId,

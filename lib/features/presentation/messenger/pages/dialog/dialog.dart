@@ -1,11 +1,12 @@
 import 'package:chatter/core/themes/palette.dart';
+import 'package:chatter/features/data/messenger/models/message_model.dart';
 import 'package:chatter/features/domain/messenger/entities/dialog_entity.dart';
 import 'package:chatter/features/presentation/common/bloc/authentication/authentication_bloc.dart';
 import 'package:chatter/features/presentation/messenger/bloc/dialog_bloc/dialog_bloc.dart';
 import 'package:chatter/features/presentation/messenger/pages/dialog/components/message_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class DialogPage extends StatefulWidget {
   static const String routeName = '/dialog';
@@ -29,10 +30,13 @@ class _DialogPageState extends State<DialogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final String userId =
+        BlocProvider.of<AuthenticationBloc>(context).currentUser.id;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chat'),
         automaticallyImplyLeading: false,
+        // elevation: 5.0,
         leading: IconButton(
           highlightColor: Colors.transparent,
           splashColor: Colors.transparent,
@@ -48,58 +52,33 @@ class _DialogPageState extends State<DialogPage> {
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
             children: [
-              BlocBuilder<DialogBloc, DialogState>(
-                builder: (context, state) {
-                  if (state.isSuccess) {
-                    if (state.messages!.isEmpty) {
-                      return const Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image(
-                              image: AssetImage('assets/images/error.png'),
-                              height: 128,
-                            ),
-                            Text(
-                              textAlign: TextAlign.center,
-                              'You dont have any messages yet!\nType something!',
-                              style: TextStyle(color: Palette.black),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                    final String userId =
-                        BlocProvider.of<AuthenticationBloc>(context)
-                            .currentUser
-                            .id;
-
+              StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('dialogs')
+                    .doc(widget.dialog.id)
+                    .collection('messages')
+                    .orderBy('createdTimestamp', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
                     return Expanded(
                       child: ListView.builder(
-                        itemCount: state.messages!.length,
+                        itemCount: snapshot.data!.docs.length,
+                        reverse: true,
                         itemBuilder: (context, index) {
+                          final MessageModel message = MessageModel.fromJson(
+                              json: snapshot.data!.docs[index].data());
+
                           return MessageCard(
-                            message: state.messages![index],
-                            isLeft: state.messages![index].senderId == userId,
+                            message: message,
+                            isLeft: message.senderId == userId,
                           );
                         },
                       ),
                     );
-                  } else if (state.isFailed) {
-                    return Expanded(
-                      child: Center(
-                        child: Text(state.message),
-                      ),
-                    );
-                  } else {
-                    return const Expanded(
-                      child: Center(
-                        child: SpinKitSpinningLines(
-                          color: Palette.lightGreenSalad,
-                        ),
-                      ),
-                    );
                   }
+                  return const Expanded(
+                      child: Center(child: CircularProgressIndicator()));
                 },
               ),
               _getMessageInput(),

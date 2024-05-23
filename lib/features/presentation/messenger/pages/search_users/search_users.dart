@@ -11,11 +11,16 @@ class SearchUsersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: AppBarWithSearch(),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8.0),
-        child: SearchUsersPageBody(),
+    return GestureDetector(
+      onPanUpdate: (final DragUpdateDetails details) {
+        if (details.delta.dx > 6) Navigator.of(context).pop();
+      },
+      child: const Scaffold(
+        appBar: AppBarWithSearch(),
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+          child: SearchUsersPageBody(),
+        ),
       ),
     );
   }

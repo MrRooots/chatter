@@ -3,7 +3,6 @@ import 'package:chatter/core/services/firebase_repository.dart';
 import 'package:chatter/core/usecases/usecase.dart';
 import 'package:chatter/features/domain/common/entities/user_entity.dart';
 import 'package:chatter/features/domain/messenger/entities/dialog_entity.dart';
-import 'package:chatter/features/domain/messenger/entities/message_entity.dart';
 import 'package:dartz/dartz.dart';
 
 final class SendMessageParams {
@@ -20,15 +19,13 @@ final class SendMessageParams {
   });
 }
 
-final class SendMessageUsecase
-    extends UseCase<List<MessageEntity>, SendMessageParams> {
+final class SendMessageUsecase extends UseCase<void, SendMessageParams> {
   final FirebaseRepository repository;
 
   SendMessageUsecase({required this.repository});
 
   @override
-  Future<Either<List<MessageEntity>, Failure>> call(
-      final SendMessageParams params) async {
+  Future<Either<void, Failure>> call(final SendMessageParams params) async {
     return await repository.sendMessage(
       dialog: params.dialog,
       messageBody: params.message,

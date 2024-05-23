@@ -30,7 +30,6 @@ class DialogBloc extends Bloc<DialogEvent, DialogState> {
     emit(const DialogState(status: DialogStatus.loading));
 
     final messagesOrFailure = await getMessagesList(GetMessagesListParams(
-      userId: event.userId,
       dialogId: event.dialogId,
     ));
 
@@ -53,15 +52,13 @@ class DialogBloc extends Bloc<DialogEvent, DialogState> {
     final messagesOrFailure = await sendMessage(SendMessageParams(
       dialog: event.dialog,
       currentUser: event.currentUser,
-      receiptId: event.dialog.sender.id,
+      receiptId: event.dialog.participants
+          .firstWhere((e) => e != event.currentUser.id),
       message: event.message,
     ));
 
     messagesOrFailure.fold(
-      (final messages) => emit(DialogState(
-        status: DialogStatus.success,
-        messages: messages,
-      )),
+      (final messages) => null,
       (final failure) => emit(DialogState(
         status: DialogStatus.failed,
         message: failure.message,

@@ -17,7 +17,12 @@ final class DialogsListFetch extends DialogsListEvent {
 }
 
 final class DialogsListComplete extends DialogsListEvent {
-  const DialogsListComplete();
+  final List<DialogEntity> dialogs;
+
+  const DialogsListComplete({required this.dialogs});
+
+  @override
+  List<Object?> get props => [dialogs];
 }
 
 final class DialogsListAdd extends DialogsListEvent {
@@ -31,4 +36,17 @@ final class DialogsListAdd extends DialogsListEvent {
 
   @override
   List<Object?> get props => [user, dialogWith];
+}
+
+final class DialogsListDelete extends DialogsListEvent {
+  final UserEntity user;
+  final String dialogId;
+
+  const DialogsListDelete({
+    required this.dialogId,
+    required this.user,
+  });
+
+  @override
+  List<Object?> get props => [user, dialogId];
 }

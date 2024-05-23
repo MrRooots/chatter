@@ -5,10 +5,9 @@ import 'package:chatter/features/domain/messenger/entities/message_entity.dart';
 import 'package:dartz/dartz.dart';
 
 final class GetMessagesListParams {
-  final String userId;
   final String dialogId;
 
-  const GetMessagesListParams({required this.userId, required this.dialogId});
+  const GetMessagesListParams({required this.dialogId});
 }
 
 final class GetMessagesListUsecase
@@ -22,7 +21,6 @@ final class GetMessagesListUsecase
     final GetMessagesListParams params,
   ) async {
     return await repository.getMessagesList(
-      userId: params.userId,
       dialogId: params.dialogId,
     );
   }

@@ -12,6 +12,7 @@ import 'package:chatter/features/domain/auth/usecases/sign_in.dart';
 import 'package:chatter/features/domain/auth/usecases/sign_out.dart';
 import 'package:chatter/features/domain/auth/usecases/sign_up.dart';
 import 'package:chatter/features/domain/messenger/usecases/create_dialog.dart';
+import 'package:chatter/features/domain/messenger/usecases/delete_dialog.dart';
 import 'package:chatter/features/domain/messenger/usecases/get_dialogs_list.dart';
 import 'package:chatter/features/domain/messenger/usecases/get_messages_list.dart';
 import 'package:chatter/features/domain/messenger/usecases/send_message.dart';
@@ -60,6 +61,7 @@ void initializeBLoCs() {
   sl.registerLazySingleton(() => DialogsListBloc(
         getDialogsList: sl(),
         createDialog: sl(),
+        deleteDialog: sl(),
       ));
 
   sl.registerFactory(() => DialogBloc(
@@ -88,6 +90,8 @@ void initializeUsecases() {
   sl.registerLazySingleton(() => GetMessagesListUsecase(repository: sl()));
 
   sl.registerLazySingleton(() => CreateDialogUseCase(repository: sl()));
+
+  sl.registerLazySingleton(() => DeleteDialogUseCase(repository: sl()));
 
   sl.registerLazySingleton(() => SendMessageUsecase(repository: sl()));
 }

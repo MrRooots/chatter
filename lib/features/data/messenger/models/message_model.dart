@@ -21,6 +21,22 @@ final class MessageModel extends MessageEntity {
     );
   }
 
+  factory MessageModel.empty({
+    final String? senderId,
+    final String? to,
+    final String? senderInitials,
+    final String? body,
+  }) {
+    return MessageModel(
+      senderId: senderId ?? '',
+      senderInitials: senderInitials ?? '',
+      to: to ?? '',
+      body: body ?? '',
+      createdTimestamp: DateTime.now().millisecondsSinceEpoch,
+      isViewed: false,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'to': to,

@@ -5,16 +5,32 @@ import 'package:equatable/equatable.dart';
 class DialogEntity extends Equatable {
   final String id;
 
-  final UserEntity sender;
+  final UserEntity dialogWith;
+
+  final MessageEntity lastMessage;
+
+  final List<String> participants;
 
   final List<MessageEntity> messages;
 
+  final int updatedTimestamp;
+
   const DialogEntity({
     required this.id,
-    required this.sender,
+    required this.dialogWith,
+    required this.lastMessage,
+    required this.participants,
     required this.messages,
+    required this.updatedTimestamp,
   });
 
   @override
-  List<Object?> get props => [id, sender, messages];
+  List<Object?> get props => [
+        id,
+        dialogWith,
+        lastMessage.createdTimestamp,
+        participants,
+        messages,
+        updatedTimestamp
+      ];
 }

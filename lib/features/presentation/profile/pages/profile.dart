@@ -8,20 +8,25 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          highlightColor: Colors.transparent,
-          splashColor: Colors.transparent,
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+    return GestureDetector(
+      onPanUpdate: (final DragUpdateDetails details) {
+        if (details.delta.dx > 6) Navigator.of(context).pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          ),
         ),
-      ),
-      body: const SizedBox(
-        width: double.infinity,
-        child: ProfilePageBody(),
+        body: const SizedBox(
+          width: double.infinity,
+          child: ProfilePageBody(),
+        ),
       ),
     );
   }

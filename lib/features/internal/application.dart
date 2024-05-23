@@ -50,15 +50,15 @@ class MessengerApp extends StatelessWidget {
               return const SplashPage();
             } else if (settings.name == DialogPage.routeName) {
               final DialogEntity dialog = settings.arguments as DialogEntity;
+              final String userId =
+                  BlocProvider.of<AuthenticationBloc>(context).currentUser.id;
 
               return BlocProvider(
                 create: (context) => sl<DialogBloc>()
                   ..add(DialogOpen(
-                    userId: BlocProvider.of<AuthenticationBloc>(context)
-                        .currentUser
-                        .id,
+                    userId: userId,
                     dialogId: dialog.id,
-                    sender: dialog.sender,
+                    sender: dialog.participants.firstWhere((e) => e != userId),
                   )),
                 child: DialogPage(dialog: dialog),
               );

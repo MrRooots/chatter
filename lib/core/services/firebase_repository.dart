@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:chatter/core/exceptions/failures.dart';
 import 'package:chatter/core/services/network_info.dart';
 import 'package:chatter/features/data/common/models/user_model.dart';
@@ -15,7 +18,6 @@ abstract interface class FirebaseRepository {
   });
 
   Future<Either<List<MessageEntity>, Failure>> getMessagesList({
-    required final String userId,
     required final String dialogId,
   });
 
@@ -24,7 +26,11 @@ abstract interface class FirebaseRepository {
     required final String dialogWith,
   });
 
-  Future<Either<List<MessageEntity>, Failure>> sendMessage({
+  Future<Either<void, Failure>> deleteDialog({
+    required final String dialogId,
+  });
+
+  Future<Either<void, Failure>> sendMessage({
     required final String messageBody,
     required final DialogEntity dialog,
     required final UserEntity currentUser,
@@ -46,24 +52,57 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
     }
 
     try {
-      final docs = await FirebaseFirestore.instance
-          .collection('/users')
-          .doc(userId)
+      final dialogsQuery = FirebaseFirestore.instance
           .collection('/dialogs')
-          .get();
+          .where('participants', arrayContains: userId);
+
+      final docs = await dialogsQuery.get();
 
       return Left(
-        docs.docs
-            .map(
-              (e) => DialogModel(
-                id: e.id,
-                sender:
-                    UserModel.fromJson(json: e.data()['sender']) as UserEntity,
-                messages: const [],
-              ),
-            )
+        (await Future.wait(docs.docs.map((e) async {
+          final dialogWith = await FirebaseFirestore.instance
+              .collection('/users')
+              .doc(e.data()['participants'].firstWhere((e) => e != userId))
+              .get();
+
+          return DialogModel.fromJson(
+              json: e.data()
+                ..addAll({
+                  'id': e.id,
+                  'dialogWith': UserModel.fromJson(json: dialogWith.data()!)
+                }));
+        })))
             .toList(),
       );
+    } on FirebaseException catch (e) {
+      log('Firestore exception: ${e.code}',
+          name: 'FirebaseRepository', error: e);
+      return Right(RequestFailure(message: 'Firestore exception: ${e.code}'));
+    } catch (e) {
+      log('Firestore exception: $e', name: 'FirebaseRepository', error: e);
+      return Right(UndefinedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<List<MessageEntity>, Failure>> getMessagesList({
+    required final String dialogId,
+  }) async {
+    if (!await networkInfo.isConnected) {
+      return const Right(ConnectionFailure(message: 'No internet connection!'));
+    }
+
+    try {
+      final messagesQuery = FirebaseFirestore.instance
+          .collection('/dialogs')
+          .doc(dialogId)
+          .collection('/messages')
+          .orderBy('createdTimestamp', descending: true);
+
+      return Left((await messagesQuery.get())
+          .docs
+          .map((e) => MessageModel.fromJson(json: e.data()))
+          .toList());
     } on FirebaseException catch (e) {
       return Right(RequestFailure(message: 'Firestore exception: ${e.code}'));
     } catch (e) {
@@ -72,8 +111,7 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
   }
 
   @override
-  Future<Either<List<MessageEntity>, Failure>> getMessagesList({
-    required final String userId,
+  Future<Either<void, Failure>> deleteDialog({
     required final String dialogId,
   }) async {
     if (!await networkInfo.isConnected) {
@@ -81,18 +119,12 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
     }
 
     try {
-      final docs = await FirebaseFirestore.instance
-          .collection('/users')
-          .doc(userId)
-          .collection('/dialogs')
+      await FirebaseFirestore.instance
+          .collection('dialogs')
           .doc(dialogId)
-          .collection('/messages')
-          .orderBy('createdTimestamp', descending: false)
-          .get();
+          .delete();
 
-      return Left(
-        docs.docs.map((e) => MessageModel.fromJson(json: e.data())).toList(),
-      );
+      return const Left(null);
     } on FirebaseException catch (e) {
       return Right(RequestFailure(message: 'Firestore exception: ${e.code}'));
     } catch (e) {
@@ -112,28 +144,18 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
     try {
       final sender = await FirebaseFirestore.instance
           .collection('/users')
-          .doc(dialogWith)
+          .doc(user.id)
           .get();
 
-      final Map<String, dynamic> dialogData = {
-        'sender': sender.data(),
-      };
-
-      // Our dialogs
-      await FirebaseFirestore.instance
-          .collection('/users')
-          .doc(user.id)
-          .collection('/dialogs')
-          .doc(dialogWith)
-          .set(dialogData);
-
-      // Receipt dialogs
-      await FirebaseFirestore.instance
-          .collection('/users')
-          .doc(dialogWith)
-          .collection('/dialogs')
-          .doc(user.id)
-          .set({'sender': (user as UserModel).toJson()});
+      await FirebaseFirestore.instance.collection('dialogs').add({
+        'participants': [user.id, dialogWith],
+        'lastMessage': MessageModel.empty(
+          senderId: user.id,
+          senderInitials: sender.data()!['id'],
+          to: dialogWith,
+        ).toJson(),
+        'updatedTimestamp': FieldValue.serverTimestamp(),
+      });
 
       return const Left(null);
     } on FirebaseException catch (e) {
@@ -144,7 +166,7 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
   }
 
   @override
-  Future<Either<List<MessageEntity>, Failure>> sendMessage({
+  Future<Either<void, Failure>> sendMessage({
     required final String messageBody,
     required final DialogEntity dialog,
     required final UserEntity currentUser,
@@ -164,34 +186,14 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
         isViewed: false,
       );
 
-      await FirebaseFirestore.instance
-          .collection('/users')
-          .doc(currentUser.id)
-          .collection('/dialogs')
-          .doc(dialog.id)
-          .collection('/messages')
-          .add(message.toJson());
+      final DocumentReference dialogRef =
+          FirebaseFirestore.instance.collection('/dialogs').doc(dialog.id);
 
-      await FirebaseFirestore.instance
-          .collection('/users')
-          .doc(receiptId)
-          .collection('/dialogs')
-          .doc(dialog.id)
-          .collection('/messages')
-          .add(message.toJson());
+      await dialogRef.update({'lastMessage': message.toJson()});
 
-      final docs = await FirebaseFirestore.instance
-          .collection('/users')
-          .doc(message.senderId)
-          .collection('/dialogs')
-          .doc(dialog.id)
-          .collection('/messages')
-          .orderBy('createdTimestamp', descending: false)
-          .get();
+      await dialogRef.collection('/messages').add(message.toJson());
 
-      return Left(
-        docs.docs.map((e) => MessageModel.fromJson(json: e.data())).toList(),
-      );
+      return const Left(null);
     } on FirebaseException catch (e) {
       return Right(RequestFailure(message: 'Firestore exception: ${e.code}'));
     } catch (e) {

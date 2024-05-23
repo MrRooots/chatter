@@ -47,7 +47,7 @@ class MessageCard extends StatelessWidget {
                         Text(
                           DateFormat('HH:mm').format(
                               DateTime.fromMillisecondsSinceEpoch(
-                                  message.createdTimestamp * 1000)),
+                                  message.createdTimestamp)),
                           style: const TextStyle(
                             fontSize: 12.0,
                             color: Palette.grey,
