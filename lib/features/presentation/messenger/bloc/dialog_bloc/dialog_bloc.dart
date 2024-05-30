@@ -4,6 +4,7 @@ import 'package:chatter/features/domain/common/entities/user_entity.dart';
 import 'package:chatter/features/domain/messenger/entities/dialog_entity.dart';
 import 'package:chatter/features/domain/messenger/entities/message_entity.dart';
 import 'package:chatter/features/domain/messenger/usecases/get_messages_list.dart';
+import 'package:chatter/features/domain/messenger/usecases/mark_dialog_read.dart';
 import 'package:chatter/features/domain/messenger/usecases/send_message.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,10 +15,12 @@ part 'dialog_state.dart';
 class DialogBloc extends Bloc<DialogEvent, DialogState> {
   final GetMessagesListUsecase getMessagesList;
   final SendMessageUsecase sendMessage;
+  final MarkDialogReadUsecase markAsRead;
 
   DialogBloc({
     required this.getMessagesList,
     required this.sendMessage,
+    required this.markAsRead,
   }) : super(const DialogState()) {
     on<DialogOpen>(_onDialogOpen);
     on<DialogSendMessage>(_onDialogSendMessage);
@@ -32,6 +35,8 @@ class DialogBloc extends Bloc<DialogEvent, DialogState> {
     final messagesOrFailure = await getMessagesList(GetMessagesListParams(
       dialogId: event.dialogId,
     ));
+
+    markAsRead(MarkDialogReadParams(dialogId: event.dialogId));
 
     messagesOrFailure.fold(
       (final messages) => emit(DialogState(

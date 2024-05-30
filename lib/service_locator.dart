@@ -15,6 +15,7 @@ import 'package:chatter/features/domain/messenger/usecases/create_dialog.dart';
 import 'package:chatter/features/domain/messenger/usecases/delete_dialog.dart';
 import 'package:chatter/features/domain/messenger/usecases/get_dialogs_list.dart';
 import 'package:chatter/features/domain/messenger/usecases/get_messages_list.dart';
+import 'package:chatter/features/domain/messenger/usecases/mark_dialog_read.dart';
 import 'package:chatter/features/domain/messenger/usecases/send_message.dart';
 import 'package:chatter/features/domain/profile/repositories/profile_repository.dart';
 import 'package:chatter/features/domain/profile/usecases/profile_updates_stream.dart';
@@ -67,6 +68,7 @@ void initializeBLoCs() {
   sl.registerFactory(() => DialogBloc(
         getMessagesList: sl(),
         sendMessage: sl(),
+        markAsRead: sl(),
       ));
 }
 
@@ -92,6 +94,8 @@ void initializeUsecases() {
   sl.registerLazySingleton(() => CreateDialogUseCase(repository: sl()));
 
   sl.registerLazySingleton(() => DeleteDialogUseCase(repository: sl()));
+
+  sl.registerLazySingleton(() => MarkDialogReadUsecase(repository: sl()));
 
   sl.registerLazySingleton(() => SendMessageUsecase(repository: sl()));
 }

@@ -31,6 +31,6 @@ class DialogEntity extends Equatable {
         lastMessage.createdTimestamp,
         participants,
         messages,
-        updatedTimestamp
+        updatedTimestamp,
       ];
 }

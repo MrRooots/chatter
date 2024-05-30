@@ -37,6 +37,7 @@ class DialogsListBloc extends Bloc<DialogsListEvent, DialogsListState> {
     FirebaseFirestore.instance
         .collection('/dialogs')
         .where('participants', arrayContains: userId)
+        .orderBy('lastMessage.createdTimestamp', descending: true)
         .snapshots()
         .listen((final snapshot) async {
       if (isClosed) return;

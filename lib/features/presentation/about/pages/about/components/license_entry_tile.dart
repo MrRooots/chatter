@@ -1,3 +1,4 @@
+import 'package:chatter/core/themes/custom_page_route.dart';
 import 'package:chatter/features/presentation/about/pages/about/components/license_data.dart';
 import 'package:chatter/features/presentation/about/pages/about/components/license_page.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ class LicenseEntryTile extends StatelessWidget {
       title: Text(packageName, style: const TextStyle(fontSize: 14.0)),
       dense: true,
       visualDensity: const VisualDensity(vertical: -4),
-      onTap: () async => await Navigator.of(context).push(MaterialPageRoute(
+      onTap: () async => await Navigator.of(context).push(CustomPageRoute(
         builder: (context) => LicenseDetailsPage(
           packageName: packageName,
           packageLicenses: bindings

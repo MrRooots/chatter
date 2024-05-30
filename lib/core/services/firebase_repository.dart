@@ -26,6 +26,10 @@ abstract interface class FirebaseRepository {
     required final String dialogWith,
   });
 
+  Future<Either<void, Failure>> markDialogAsRead({
+    required final String dialogId,
+  });
+
   Future<Either<void, Failure>> deleteDialog({
     required final String dialogId,
   });
@@ -52,28 +56,29 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
     }
 
     try {
-      final dialogsQuery = FirebaseFirestore.instance
+      final dialogsSnapshot = await FirebaseFirestore.instance
           .collection('/dialogs')
-          .where('participants', arrayContains: userId);
+          .where('participants', arrayContains: userId)
+          .orderBy('lastMessage.createdTimestamp', descending: true)
+          .get();
 
-      final docs = await dialogsQuery.get();
+      final dialogs = await Future.wait(dialogsSnapshot.docs.map((doc) async {
+        final otherUserId =
+            doc.data()['participants'].firstWhere((id) => id != userId);
+        final dialogWithSnapshot = await FirebaseFirestore.instance
+            .collection('/users')
+            .doc(otherUserId)
+            .get();
+        final dialogWith = UserModel.fromJson(json: dialogWithSnapshot.data()!);
 
-      return Left(
-        (await Future.wait(docs.docs.map((e) async {
-          final dialogWith = await FirebaseFirestore.instance
-              .collection('/users')
-              .doc(e.data()['participants'].firstWhere((e) => e != userId))
-              .get();
+        return DialogModel.fromJson(json: {
+          ...doc.data(),
+          'id': doc.id,
+          'dialogWith': dialogWith,
+        });
+      }).toList());
 
-          return DialogModel.fromJson(
-              json: e.data()
-                ..addAll({
-                  'id': e.id,
-                  'dialogWith': UserModel.fromJson(json: dialogWith.data()!)
-                }));
-        })))
-            .toList(),
-      );
+      return Left(dialogs);
     } on FirebaseException catch (e) {
       log('Firestore exception: ${e.code}',
           name: 'FirebaseRepository', error: e);
@@ -93,16 +98,47 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
     }
 
     try {
-      final messagesQuery = FirebaseFirestore.instance
+      final messages = await FirebaseFirestore.instance
           .collection('/dialogs')
           .doc(dialogId)
           .collection('/messages')
-          .orderBy('createdTimestamp', descending: true);
+          .orderBy('createdTimestamp', descending: true)
+          .get();
 
-      return Left((await messagesQuery.get())
-          .docs
+      return Left(messages.docs
           .map((e) => MessageModel.fromJson(json: e.data()))
           .toList());
+    } on FirebaseException catch (e) {
+      return Right(RequestFailure(message: 'Firestore exception: ${e.code}'));
+    } catch (e) {
+      return Right(UndefinedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<void, Failure>> markDialogAsRead({
+    required final String dialogId,
+  }) async {
+    if (!await networkInfo.isConnected) {
+      return const Right(ConnectionFailure(message: 'No internet connection!'));
+    }
+
+    try {
+      // Start a batch
+      final batch = FirebaseFirestore.instance.batch();
+      final messagesSnapshot = await FirebaseFirestore.instance
+          .collection('/dialogs')
+          .doc(dialogId)
+          .collection('/messages')
+          .get();
+
+      for (final messageDoc in messagesSnapshot.docs) {
+        batch.update(messageDoc.reference, {'isViewed': true});
+      }
+
+      await batch.commit();
+
+      return const Left(null);
     } on FirebaseException catch (e) {
       return Right(RequestFailure(message: 'Firestore exception: ${e.code}'));
     } catch (e) {
@@ -154,7 +190,7 @@ final class FirebaseRepositoryImpl implements FirebaseRepository {
           senderInitials: sender.data()!['id'],
           to: dialogWith,
         ).toJson(),
-        'updatedTimestamp': FieldValue.serverTimestamp(),
+        'updatedTimestamp': DateTime.now(),
       });
 
       return const Left(null);

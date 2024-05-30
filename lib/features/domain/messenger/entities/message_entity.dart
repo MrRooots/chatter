@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class MessageEntity extends Equatable {
-  /// Receiver id { usually equals current user id }
+  /// Receiver id
   final String to;
 
   /// Sender id

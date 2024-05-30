@@ -2,6 +2,8 @@ import 'package:chatter/core/themes/palette.dart';
 import 'package:chatter/features/presentation/common/bloc/authentication/authentication_bloc.dart';
 import 'package:chatter/features/presentation/messenger/bloc/dialogs_list_bloc/dialogs_list_bloc.dart';
 import 'package:chatter/features/presentation/messenger/pages/home/components/dialog_card.dart';
+import 'package:chatter/features/presentation/messenger/pages/home/components/dialog_load_fail.dart';
+import 'package:chatter/features/presentation/messenger/pages/home/components/no_dialogs_placeholder.dart';
 import 'package:chatter/features/presentation/messenger/pages/search_users/search_users.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -53,80 +55,35 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: RefreshIndicator(
-            color: Palette.lightGreenSalad,
-            onRefresh: () async {
-              BlocProvider.of<DialogsListBloc>(context).add(DialogsListFetch(
-                  user: BlocProvider.of<AuthenticationBloc>(context)
-                      .currentUser));
-            },
-            child: BlocBuilder<DialogsListBloc, DialogsListState>(
-              builder: (context, state) {
-                if (state.isSuccess) {
-                  if (state.dialogs!.isEmpty) {
-                    return Stack(
-                      children: [
-                        ListView(),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image(
-                              image: AssetImage('assets/images/error.png'),
-                              height: 128,
-                            ),
-                            Text(
-                              textAlign: TextAlign.center,
-                              'You dont have any active dialogs right now!\nYou can start a new dialog using the button in right lower corner!',
-                              style: TextStyle(color: Palette.black),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  }
+      body: RefreshIndicator(
+          color: Palette.lightGreenSalad,
+          onRefresh: () async {
+            BlocProvider.of<DialogsListBloc>(context).add(DialogsListFetch(
+                user:
+                    BlocProvider.of<AuthenticationBloc>(context).currentUser));
+          },
+          child: BlocBuilder<DialogsListBloc, DialogsListState>(
+            builder: (context, state) {
+              if (state.isSuccess) {
+                if (state.dialogs!.isEmpty) return const NoDialogsPlaceholder();
 
-                  return ListView.builder(
-                    controller: _listController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: state.dialogs!.length,
-                    itemBuilder: (context, index) {
-                      return DialogCard(
-                        dialog: state.dialogs![index],
-                      );
-                    },
-                  );
-                } else if (state.isFailed) {
-                  return Stack(
-                    children: [
-                      ListView(),
-                      const SizedBox(
-                        width: double.infinity,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Image(
-                              image: AssetImage('assets/images/error.png'),
-                              height: 128,
-                            ),
-                            Text(
-                              textAlign: TextAlign.center,
-                              'Failed to load dialogs!',
-                              style: TextStyle(color: Palette.black),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              },
-            )),
-      ),
+                return ListView.builder(
+                  controller: _listController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: state.dialogs!.length,
+                  itemBuilder: (context, index) {
+                    return DialogCard(
+                      dialog: state.dialogs![index],
+                    );
+                  },
+                );
+              } else if (state.isFailed) {
+                return const DialogLoadingFailedPlaceholder();
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          )),
       floatingActionButton: AnimatedSlide(
         duration: const Duration(milliseconds: 250),
         offset: _isVisible ? Offset.zero : const Offset(0, 2),

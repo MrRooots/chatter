@@ -4,6 +4,7 @@ import 'package:chatter/features/domain/messenger/entities/dialog_entity.dart';
 import 'package:chatter/features/presentation/common/bloc/authentication/authentication_bloc.dart';
 import 'package:chatter/features/presentation/messenger/bloc/dialog_bloc/dialog_bloc.dart';
 import 'package:chatter/features/presentation/messenger/pages/dialog/components/message_card.dart';
+import 'package:chatter/features/presentation/profile/pages/immutable_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,7 +35,13 @@ class _DialogPageState extends State<DialogPage> {
         BlocProvider.of<AuthenticationBloc>(context).currentUser.id;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat'),
+        title: GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed(
+            ImmutableProfilePage.routeName,
+            arguments: widget.dialog.dialogWith,
+          ),
+          child: Text('@${widget.dialog.dialogWith.username}'),
+        ),
         automaticallyImplyLeading: false,
         // elevation: 5.0,
         leading: IconButton(
@@ -107,14 +114,16 @@ class _DialogPageState extends State<DialogPage> {
           onPressed: () {
             if (_messageController.text.trim().isEmpty) return;
 
-            BlocProvider.of<DialogBloc>(context).add(DialogSendMessage(
-              dialog: widget.dialog,
-              currentUser:
-                  BlocProvider.of<AuthenticationBloc>(context).currentUser,
-              message: _messageController.text,
-            ));
+            for (int i = 0; i < 1000; i++) {
+              BlocProvider.of<DialogBloc>(context).add(DialogSendMessage(
+                dialog: widget.dialog,
+                currentUser:
+                    BlocProvider.of<AuthenticationBloc>(context).currentUser,
+                message: _messageController.text,
+              ));
+            }
             _messageController.clear();
-            FocusManager.instance.primaryFocus?.unfocus();
+            // FocusManager.instance.primaryFocus?.unfocus();
           },
           icon: const Icon(
             Icons.send_rounded,
